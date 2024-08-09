@@ -71,8 +71,24 @@ model User {
   images       Image[]
   backgrounds  BackgroundImage[]
   liveSessions LiveSession[]
-
+  sessiions UserSession[]
   @@map("user")
+}
+
+model UserSession {
+  id           Int               @id @default(autoincrement())
+  uuid         String            @unique @default(uuid()) @db.Uuid
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  status       STATUS            @default(ACTIVE)
+  // unique fields
+  ipAddress String
+  token String @unique
+  expiry DateTime
+  // relations
+  userId   Int
+  user     User     @relation(fields: [userId], references: [id])
+  @@map("user-session")
 }
 
 model LiveSession {
