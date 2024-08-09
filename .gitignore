@@ -1,0 +1,11 @@
+node_modules/
+.env
+dist/
+package-lock.json
+git-meta.json
+debug-logs/
+debug-data/
+.vscode/
+.DS_Store
+**/.DS_Store
+.git

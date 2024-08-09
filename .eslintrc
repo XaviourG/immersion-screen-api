@@ -1,0 +1,41 @@
+{
+  "root": true,
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2021": true
+  },
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["prettier", "eslint-plugin-prettier", "@typescript-eslint"],
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/eslint-recommended", "plugin:@typescript-eslint/recommended"],
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": "latest",
+    "allowImportExportEverywhere": true
+  },
+  "rules": {
+    "no-console": [
+      1,
+      {
+        "allow": ["info", "warn", "error"]
+      }
+    ],
+    "quotes": ["error", "single", { "avoidEscape": true }],
+    "semi": ["error", "always"],
+    "no-trailing-spaces": "error",
+    "no-use-before-define": "error",
+    "eqeqeq": "error",
+    "no-unused-vars": "off",
+    "no-unsafe-negation": "error",
+    "no-unsafe-optional-chaining": "error",
+    "use-isnan": "error",
+    "valid-typeof": "error",
+    "no-confusing-arrow": "error",
+    "prefer-const": "error",
+    "require-await": "warn",
+    "array-callback-return": "error",
+    "no-self-assign": "error",
+    "for-direction": "error",
+    "curly": "error"
+  }
+}
