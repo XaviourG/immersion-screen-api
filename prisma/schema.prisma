@@ -12,16 +12,245 @@ enum STATUS {
   ARCHIVED
 }
 
+enum CHARACTER_TYPE {
+  PLAYER
+  NPC
+}
+
+enum CHARACTER_CLASSIFICATION {
+  HUMANOID
+  ABERRATION
+  BEAST
+  CELESTIAL
+  CONSTRUCT
+  DRAAGON
+  ELEMENTAL
+  FEY
+  FIEND
+  GIANT
+  MONSTROSITY
+  OOZE
+  PLANT
+  UNDEAD
+}
+
+enum STATUS_EFFECT_TYPE {
+  BLINDED
+  CHARMED
+  DEAFENED
+  FRIGHTENED
+  GRAPPLED
+  INCAPACITATED
+  INVISIBLE
+  PARALYZED
+  PETRIFIED
+  POISONED
+  PRONE
+  RESTRAINTED
+  STUNNED
+  UNCONCIOUS
+  EXHAUSTION
+}
+
 model User {
-  id          Int                   @id @default(autoincrement())
-  uuid        String                @unique @default(uuid()) @db.Uuid
-  createdAt   DateTime              @default(now())
-  updatedAt   DateTime              @updatedAt
-  status      STATUS                @default(ACTIVE)
+  id           Int               @id @default(autoincrement())
+  uuid         String            @unique @default(uuid()) @db.Uuid
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  status       STATUS            @default(ACTIVE)
   // unique fields
-  email       String                @unique
-  username String
-  password    String
+  email        String            @unique
+  name         String
+  password     String
   // relations
+  parties      Party[]
+  combats      Combat[]
+  combatants   Combatant[]
+  scenes       Scene[]
+  characters   Character[]
+  images       Image[]
+  backgrounds  BackgroundImage[]
+  liveSessions LiveSession[]
+
   @@map("user")
+}
+
+model LiveSession {
+  id        Int      @id @default(autoincrement())
+  uuid      String   @unique @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  status    STATUS   @default(ACTIVE)
+  // unique fields
+  password  String?
+  // relations
+  combatId  Int?     @unique
+  combat    Combat?  @relation(fields: [combatId], references: [id])
+  sceneId   Int?     @unique
+  scene     Scene?   @relation(fields: [sceneId], references: [id])
+  ownerId   Int
+  owner     User     @relation(fields: [ownerId], references: [id])
+
+  @@map("live-session")
+}
+
+model Party {
+  id         Int            @id @default(autoincrement())
+  uuid       String         @unique @default(uuid()) @db.Uuid
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  status     STATUS         @default(ACTIVE)
+  // unique fields
+  name       String
+  type       CHARACTER_TYPE @default(NPC)
+  // relations
+  ownerId    Int
+  owner      User           @relation(fields: [ownerId], references: [id])
+  characters Character[]
+
+  @@map("player-party")
+}
+
+model Scene {
+  id           Int              @id @default(autoincrement())
+  uuid         String           @unique @default(uuid()) @db.Uuid
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  status       STATUS           @default(ACTIVE)
+  // unique fields
+  name         String
+  // relations
+  liveSession  LiveSession?
+  backgroundId Int?
+  background   BackgroundImage? @relation(fields: [backgroundId], references: [id])
+  ownerId      Int
+  owner        User             @relation(fields: [ownerId], references: [id])
+  characters   Character[]
+
+  @@map("scene-board")
+}
+
+model Combat {
+  id              Int              @id @default(autoincrement())
+  uuid            String           @unique @default(uuid()) @db.Uuid
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  status          STATUS           @default(ACTIVE)
+  // unique fields
+  name            String
+  initiativeIndex Int              @default(0)
+  initiativeRound Int              @default(0)
+  // relations
+  liveSession     LiveSession?
+  backgroundId    Int?
+  background      BackgroundImage? @relation(fields: [backgroundId], references: [id])
+  ownerId         Int
+  owner           User             @relation(fields: [ownerId], references: [id])
+  combatants      Combatant[]
+
+  @@map("combat-board")
+}
+
+model Combatant {
+  id                Int            @id @default(autoincrement())
+  uuid              String         @unique @default(uuid()) @db.Uuid
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  status            STATUS         @default(ACTIVE)
+  // unique fields
+  currentHealth     Int
+  notes             String         @default("")
+  currentInitiative Int            @default(10)
+  // relations
+  conditions        StatusEffect[]
+  characterId       Int
+  character         Character      @relation(fields: [characterId], references: [id])
+  combats           Combat[]
+  ownerId           Int
+  owner             User           @relation(fields: [ownerId], references: [id])
+
+  @@map("combat-character-instance")
+}
+
+model StatusEffect {
+  id          Int                @id @default(autoincrement())
+  uuid        String             @unique @default(uuid()) @db.Uuid
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  status      STATUS             @default(ACTIVE)
+  // unique fields
+  type        STATUS_EFFECT_TYPE
+  // relations
+  combatantId Int
+  combatant   Combatant          @relation(fields: [combatantId], references: [id])
+
+  @@map("combat-status-effect")
+}
+
+model Character {
+  id                 Int                      @id @default(autoincrement())
+  uuid               String                   @unique @default(uuid()) @db.Uuid
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+  status             STATUS                   @default(ACTIVE)
+  // unique fields
+  name               String
+  metaName           String?
+  notes              String                   @default("")
+  type               CHARACTER_TYPE
+  classification     CHARACTER_CLASSIFICATION
+  maxHealth          Int
+  armourClass        Int
+  initiativeModifier Int                      @default(0)
+  // relations
+  combatantInstances Combatant[]
+  tokenImageId       Int?
+  tokenImage         Image?                   @relation("char-token-img", fields: [tokenImageId], references: [id])
+  portraitImageId    Int?
+  portraitImage      Image?                   @relation("char-portrait-img", fields: [portraitImageId], references: [id])
+  parties            Party[]
+  scenes             Scene[]
+  ownerId            Int
+  owner              User                     @relation(fields: [ownerId], references: [id])
+
+  @@map("character")
+}
+
+model Image {
+  id                 Int               @id @default(autoincrement())
+  uuid               String            @unique @default(uuid()) @db.Uuid
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  status             STATUS            @default(ACTIVE)
+  // unique fields
+  name               String
+  url                String
+  mime               String
+  // relations
+  backgrounds        BackgroundImage[]
+  characterTokens    Character[]       @relation("char-token-img")
+  characterPortraits Character[]       @relation("char-portrait-img")
+  ownerId            Int
+  owner              User              @relation(fields: [ownerId], references: [id])
+
+  @@map("image")
+}
+
+model BackgroundImage {
+  id        Int      @id @default(autoincrement())
+  uuid      String   @unique @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  status    STATUS   @default(ACTIVE)
+  // unique fields
+  name      String
+  // relations
+  scenes    Scene[]
+  combats   Combat[]
+  imageId   Int
+  image     Image    @relation(fields: [imageId], references: [id])
+  ownerId   Int
+  owner     User     @relation(fields: [ownerId], references: [id])
+
+  @@map("background-image")
 }
