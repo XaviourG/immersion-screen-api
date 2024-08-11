@@ -4,13 +4,14 @@ import { Env } from '../../utilities/env';
 import { AnyObject } from '../../utilities/global-types';
 import { SESSION_COOKIE_KEY } from '../../utilities/global-constants';
 import { getPrisma } from '../database';
+import { CError } from '../../utilities/errors';
 
 const COOKIE_SECRET = Env.get('COOKIE_SECRET');
 
 export const getRequestUser = (request: FastifyRequest) => {
   const user = (request as AnyObject).user;
   if (!user) {
-    throw new Error('AUTH: No user found on authenticated request.');
+    throw new CError('AUTH: No user found on authenticated request.', { url: request.url });
   }
   return user;
 };
@@ -19,11 +20,11 @@ export const setupAuthenticationHook = (server: FastifyInstance) => {
   server.addHook('preHandler', async (request) => {
     const authCookie = request?.cookies?.[SESSION_COOKIE_KEY];
     if (!authCookie) {
-      throw new Error('AUTH: Missing cookie');
+      throw new CError('AUTH: Missing cookie', { url: request.url }, 'Unauthorized');
     }
     const user = await getPrisma().user.findUnique({ where: { uuid: authCookie } });
     if (!authCookie) {
-      throw new Error('AUTH: Invalid cookie');
+      throw new CError('AUTH: Invalid cookie', { url: request.url }, 'Unauthorized');
     }
     (request as AnyObject).user = user;
   });
