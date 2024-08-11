@@ -5,10 +5,12 @@ import { Env } from './utilities/env';
 import { setupWebsocket } from './infrastructure/socket';
 import { setupAuthentication } from './infrastructure/authentication';
 import { setupRouting } from './infrastructure/routing';
+import { sanitiseError } from './utilities/errors/handler';
 
 const PORT = Env.getNumeric('PORT');
 
 const server = fastify().withTypeProvider<TypeBoxTypeProvider>();
+server.setErrorHandler(sanitiseError);
 const database = getPrisma();
 setupAuthentication(server);
 setupWebsocket(server);
