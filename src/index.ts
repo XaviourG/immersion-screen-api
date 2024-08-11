@@ -4,6 +4,7 @@ import { getPrisma } from './infrastructure/database';
 import { Env } from './utilities/env';
 import { setupWebsocket } from './infrastructure/socket';
 import { setupAuthentication } from './infrastructure/authentication';
+import { setupRouting } from './infrastructure/routing';
 
 const PORT = Env.getNumeric('PORT');
 
@@ -11,6 +12,7 @@ const server = fastify().withTypeProvider<TypeBoxTypeProvider>();
 const database = getPrisma();
 setupAuthentication(server);
 setupWebsocket(server);
+setupRouting(server);
 
 server.listen({ port: PORT }, (err) => {
   if (err) {
