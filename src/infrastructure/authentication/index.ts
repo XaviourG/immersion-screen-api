@@ -5,10 +5,13 @@ import { AnyObject } from '../../utilities/global-types';
 import { SESSION_COOKIE_KEY } from '../../utilities/global-constants';
 import { getPrisma } from '../database';
 import { CError } from '../../utilities/errors';
+import { User } from '@prisma/client';
 
 const COOKIE_SECRET = Env.get('COOKIE_SECRET');
 
-export const getRequestUser = (request: FastifyRequest) => {
+export type AuthenticatedUser = User;
+
+export const getRequestUser = (request: FastifyRequest): AuthenticatedUser => {
   const user = (request as AnyObject).user;
   if (!user) {
     throw new CError('AUTH: No user found on authenticated request.', { url: request.url });
