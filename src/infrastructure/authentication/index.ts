@@ -6,6 +6,8 @@ import { SESSION_COOKIE_KEY } from '../../utilities/global-constants';
 import { getPrisma } from '../database';
 import { CError } from '../../utilities/errors';
 import { User } from '@prisma/client';
+import fastifyCors from '@fastify/cors';
+import fastifyHelmet from '@fastify/helmet';
 
 const COOKIE_SECRET = Env.get('COOKIE_SECRET');
 
@@ -34,6 +36,13 @@ export const setupAuthenticationHook = (server: FastifyInstance) => {
 };
 
 export const setupAuthentication = (server: FastifyInstance) => {
+  server.register(fastifyCors, {
+    origin: `${Env.get('CLIENT_URL')}`,
+    credentials: true
+  });
+  server.register(fastifyHelmet, {
+    contentSecurityPolicy: false
+  });
   server.register(fastifyCookie, {
     secret: COOKIE_SECRET,
     hook: 'onRequest',

@@ -6,12 +6,20 @@ import { setupWebsocket } from './infrastructure/socket';
 import { setupAuthentication } from './infrastructure/authentication';
 import { setupRouting } from './infrastructure/routing';
 import { sanitiseError } from './utilities/errors/handler';
+import fastifyFormbody from '@fastify/formbody';
+import fastifyMultipart from '@fastify/multipart';
 
 const PORT = Env.getNumeric('PORT');
 
-const server = fastify().withTypeProvider<TypeBoxTypeProvider>();
+const server = fastify({
+  logger: {
+    level: 'debug' // default level
+  }
+}).withTypeProvider<TypeBoxTypeProvider>();
 server.setErrorHandler(sanitiseError);
 const database = getPrisma();
+server.register(fastifyFormbody);
+server.register(fastifyMultipart);
 setupAuthentication(server);
 setupWebsocket(server);
 setupRouting(server);
